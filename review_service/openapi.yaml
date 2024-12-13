@@ -6,10 +6,36 @@ info:
     title: Review API
     version: 0.0.1
 paths:
+    /v1/appeal/audit:
+        post:
+            tags:
+                - Review
+            description: O 端评价申诉
+            operationId: Review_AuditAppeal
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AuditAppealRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AuditAppealReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/review:
         post:
             tags:
                 - Review
+            description: C端创建评价
             operationId: Review_CreateReview
             requestBody:
                 content:
@@ -30,8 +56,191 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/review/appeal:
+        post:
+            tags:
+                - Review
+            description: B端申诉评价
+            operationId: Review_AppealReview
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AppealReviewRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AppealReviewReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/review/audit:
+        post:
+            tags:
+                - Review
+            description: O端审核评价
+            operationId: Review_AuditReview
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AuditReviewRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AuditReviewReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/review/{reviewID}:
+        get:
+            tags:
+                - Review
+            description: C端获取评价
+            operationId: Review_GetReview
+            parameters:
+                - name: reviewID
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetReviewReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    v1/review/reply:
+        post:
+            tags:
+                - Review
+            description: B端回复评价
+            operationId: Review_ReplyReview
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ReplyReviewRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ReplyReviewReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    v1/review/reply/{replyID}:
+        get:
+            tags:
+                - Review
+            operationId: Review_GetReplyReview
+            parameters:
+                - name: replyID
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ReviewReplyInfo'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
     schemas:
+        AppealReviewReply:
+            type: object
+            properties:
+                appealID:
+                    type: string
+        AppealReviewRequest:
+            type: object
+            properties:
+                reviewID:
+                    type: string
+                storeID:
+                    type: string
+                reason:
+                    type: string
+                content:
+                    type: string
+                picInfo:
+                    type: string
+                videoInfo:
+                    type: string
+        AuditAppealReply:
+            type: object
+            properties: {}
+        AuditAppealRequest:
+            type: object
+            properties:
+                appealID:
+                    type: string
+                reviewID:
+                    type: string
+                status:
+                    type: integer
+                    format: int32
+                opUser:
+                    type: string
+                opReason:
+                    type: string
+        AuditReviewReply:
+            type: object
+            properties:
+                auditID:
+                    type: string
+                status:
+                    type: integer
+                    format: int32
+        AuditReviewRequest:
+            type: object
+            properties:
+                reviewID:
+                    type: string
+                status:
+                    type: integer
+                    format: int32
+                opUser:
+                    type: string
+                opReason:
+                    type: string
+                opRemarks:
+                    type: string
         CreateReviewReply:
             type: object
             properties:
@@ -63,6 +272,11 @@ components:
                     type: string
                 anonymous:
                     type: boolean
+        GetReviewReply:
+            type: object
+            properties:
+                data:
+                    $ref: '#/components/schemas/ReviewInfo'
         GoogleProtobufAny:
             type: object
             properties:
@@ -71,6 +285,62 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        ReplyReviewReply:
+            type: object
+            properties:
+                replyID:
+                    type: string
+        ReplyReviewRequest:
+            type: object
+            properties:
+                reviewID:
+                    type: string
+                storeID:
+                    type: string
+                content:
+                    type: string
+                picInfo:
+                    type: string
+                videoInfo:
+                    type: string
+        ReviewInfo:
+            type: object
+            properties:
+                reviewID:
+                    type: string
+                userID:
+                    type: string
+                orderID:
+                    type: string
+                score:
+                    type: integer
+                    format: int32
+                serviceScore:
+                    type: integer
+                    format: int32
+                expressScore:
+                    type: integer
+                    format: int32
+                content:
+                    type: string
+                picInfo:
+                    type: string
+                videoInfo:
+                    type: string
+                status:
+                    type: integer
+                    format: int32
+        ReviewReplyInfo:
+            type: object
+            properties:
+                replyID:
+                    type: string
+                reviewID:
+                    type: string
+                storeID:
+                    type: string
+                content:
+                    type: string
         Status:
             type: object
             properties:
