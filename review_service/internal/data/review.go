@@ -89,3 +89,39 @@ func (r *reviewRepo) GetReviewReply(ctx context.Context, replyID int64) (*model.
 		Where(r.data.query.ReviewReplyInfo.ReplyID.Eq(replyID)).
 		First()
 }
+
+func (r *reviewRepo) AppealReview(ctx context.Context, appealParam *model.ReviewAppealInfo) (*model.ReviewAppealInfo, error) {
+	err := r.data.query.ReviewAppealInfo.WithContext(ctx).Save(appealParam)
+	return appealParam, err
+}
+
+func (r *reviewRepo) AuditReview(ctx context.Context, param *biz.AuditParam) error {
+	_, err := r.data.query.ReviewInfo.WithContext(ctx).
+		Where(r.data.query.ReviewInfo.ReviewID.Eq(param.ReviewID)).
+		Updates(map[string]interface{}{
+			"status":     param.Status,
+			"op_user":    param.OpUser,
+			"op_reason":  param.OpReason,
+			"op_remarks": param.OpRemarks,
+		})
+	return err
+}
+
+func (r *reviewRepo) AuditAppeal(ctx context.Context, param *biz.AuditAppealParam) error {
+	_, err := r.data.query.ReviewAppealInfo.WithContext(ctx).
+		Where(r.data.query.ReviewAppealInfo.AppealID.Eq(param.AppealID)).
+		Updates(map[string]interface{}{
+			"status":  param.Status,
+			"op_user": param.OpUser,
+		})
+	return err
+}
+
+func (r *reviewRepo) ListReviewByUserID(ctx context.Context, userID int64, offset int32, limit int32) ([]*model.ReviewInfo, error) {
+	return r.data.query.ReviewInfo.WithContext(ctx).
+		Where(r.data.query.ReviewInfo.UserID.Eq(userID)).
+		Order(r.data.query.ReviewInfo.ID.Desc()).
+		Limit(int(limit)).
+		Offset(int(offset)).
+		Find()
+}

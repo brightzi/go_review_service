@@ -96,3 +96,71 @@ func (c *ReviewService) GetReplyReview(ctx context.Context, req *pb.GetReviewRep
 	}, err
 
 }
+
+func (c *ReviewService) AppealReview(ctx context.Context, req *pb.AppealReviewRequest) (*pb.AppealReviewReply, error) {
+	fmt.Printf("[service] AppealReview, req:%v\n", req)
+
+	appeal_review, err := c.uc.AppealReview(ctx, &biz.ReviewAppealParam{
+		ReviewID:  req.ReviewID,
+		Content:   req.Content,
+		StoreID:   req.StoreID,
+		Resaon:    req.Reason,
+		PicInfo:   req.PicInfo,
+		VideoInfo: req.VideoInfo,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.AppealReviewReply{
+		AppealID: appeal_review.AppealID,
+	}, nil
+}
+
+// ReviewID  int64
+// Status    int32
+// OpUser    string
+// OpReason  string
+// OpRemarks string
+func (c *ReviewService) AuditReview(ctx context.Context, req *pb.AuditReviewRequest) (*pb.AuditReviewReply, error) {
+	fmt.Printf("[service] AuditReview, req:%v\n", req)
+
+	err := c.uc.AuditReview(ctx, &biz.AuditParam{
+		ReviewID: req.ReviewID,
+		Status:   req.Status,
+		OpUser:   req.OpUser,
+		OpReason: req.OpReason,
+	})
+	return &pb.AuditReviewReply{ReviewID: req.ReviewID, Status: req.Status}, err
+}
+
+func (c *ReviewService) AuditAppeal(ctx context.Context, req *pb.AuditAppealRequest) (*pb.AuditAppealReply, error) {
+	fmt.Printf("[service] AuditAppeal, req:%v\n", req)
+	err := c.uc.AuditAppeal(ctx, &biz.AuditAppealParam{
+		ReviewID: req.ReviewID,
+		AppealID: req.AppealID,
+		Status:   req.Status,
+		OpUser:   req.OpUser,
+	})
+	return &pb.AuditAppealReply{}, err
+}
+
+func (c *ReviewService) ListReviewByUserID(ctx context.Context, req *pb.ListReviewByUserIDRequest) (*pb.ListReviewByUserIDReply, error) {
+	fmt.Printf("[service] ListReviewByUserID, req:%v\n", req)
+	reviews, err := c.uc.ListReviewByUserID(ctx, req.UserID, req.Page, req.Size)
+	if err != nil {
+		return nil, err
+	}
+	list := make([]*pb.ReviewInfo, 0, len(reviews))
+	for _, review := range reviews {
+		list = append(list, &pb.ReviewInfo{
+			ReviewID:     review.ReviewID,
+			UserID:       review.UserID,
+			OrderID:      review.OrderID,
+			Score:        review.Score,
+			ServiceScore: review.ServiceScore,
+			ExpressScore: review.ExpressScore,
+		})
+	}
+	return &pb.ListReviewByUserIDReply{Data: list}, err
+}

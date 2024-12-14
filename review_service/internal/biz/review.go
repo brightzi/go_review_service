@@ -22,6 +22,10 @@ type ReviewRepo interface {
 	GetReview(ctx context.Context, reviewID int64) (*model.ReviewInfo, error)
 	SaveReply(ctx context.Context, reply *model.ReviewReplyInfo) (*model.ReviewReplyInfo, error)
 	GetReviewReply(ctx context.Context, replyID int64) (*model.ReviewReplyInfo, error)
+	AppealReview(ctx context.Context, appealParam *model.ReviewAppealInfo) (*model.ReviewAppealInfo, error)
+	AuditReview(ctx context.Context, param *AuditParam) error
+	AuditAppeal(ctx context.Context, param *AuditAppealParam) error
+	ListReviewByUserID(ctx context.Context, userID int64, offset int32, limit int32) ([]*model.ReviewInfo, error)
 }
 
 // ReviewUsecase is a Review usecase.
@@ -70,6 +74,47 @@ func (uc *ReviewUsecase) CreateReply(ctx context.Context, param *ReplyParam) (*m
 	return uc.repo.SaveReply(ctx, reply)
 }
 
-func (uc *ReviewUsecase) GetReply(ctx context.Context, reviewID int64) (*model.ReviewReplyInfo, error) {
-	return uc.repo.GetReviewReply(ctx, reviewID)
+// 获取商家回复
+func (uc *ReviewUsecase) GetReply(ctx context.Context, replyID int64) (*model.ReviewReplyInfo, error) {
+	return uc.repo.GetReviewReply(ctx, replyID)
+}
+
+// 商家对用户评价进行申诉
+func (uc *ReviewUsecase) AppealReview(ctx context.Context, param *ReviewAppealParam) (*model.ReviewAppealInfo, error) {
+	uc.log.WithContext(ctx).Debugf("[biz ]AppealReview param: %v", param)
+	return uc.repo.AppealReview(ctx, &model.ReviewAppealInfo{
+		AppealID:  snowflake.GenID(),
+		ReviewID:  param.ReviewID,
+		StoreID:   param.StoreID,
+		Content:   param.Content,
+		Reason:    param.Resaon,
+		PicInfo:   param.PicInfo,
+		VideoInfo: param.VideoInfo,
+		DeleteAt:  time.Now(),
+	})
+}
+
+func (uc *ReviewUsecase) AuditReview(ctx context.Context, param *AuditParam) error {
+	uc.log.WithContext(ctx).Debugf("[biz ]AuditReview param: %v", param)
+	return uc.repo.AuditReview(ctx, param)
+}
+
+func (uc *ReviewUsecase) AuditAppeal(ctx context.Context, param *AuditAppealParam) error {
+	uc.log.WithContext(ctx).Debugf("[biz ]AuditAppealReview param: %v", param)
+	return uc.repo.AuditAppeal(ctx, param)
+}
+
+func (uc *ReviewUsecase) ListReviewByUserID(ctx context.Context, userID int64, page int32, size int32) ([]*model.ReviewInfo, error) {
+	uc.log.WithContext(ctx).Debugf("[biz ]ListReviewByUserID userID: %v", userID)
+	if page <= 0 {
+		page = 1
+	}
+
+	if size <= 0 || size > 50 {
+		size = 10
+	}
+
+	offset := (page - 1) * size
+	limit := size
+	return uc.repo.ListReviewByUserID(ctx, userID, offset, limit)
 }
