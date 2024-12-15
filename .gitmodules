@@ -1,3 +1,6 @@
 [submodule "review_service/api"]
 	path = review_service/api
 	url = git@github.com:brightzi/api.git
+[submodule "review_b/api"]
+	path = review_b/api
+	url = git@github.com:brightzi/api.git
