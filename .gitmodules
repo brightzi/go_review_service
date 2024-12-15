@@ -1,0 +1,3 @@
+[submodule "review_service/api"]
+	path = review_service/api
+	url = git@github.com:brightzi/api.git
