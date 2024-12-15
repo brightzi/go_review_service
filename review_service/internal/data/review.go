@@ -113,6 +113,7 @@ func (r *reviewRepo) AuditAppeal(ctx context.Context, param *biz.AuditAppealPara
 		Updates(map[string]interface{}{
 			"status":  param.Status,
 			"op_user": param.OpUser,
+			"reason":  param.OpReason,
 		})
 	return err
 }

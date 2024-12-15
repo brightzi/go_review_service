@@ -141,6 +141,7 @@ func (c *ReviewService) AuditAppeal(ctx context.Context, req *pb.AuditAppealRequ
 		AppealID: req.AppealID,
 		Status:   req.Status,
 		OpUser:   req.OpUser,
+		OpReason: *req.OpReason,
 	})
 	return &pb.AuditAppealReply{}, err
 }
